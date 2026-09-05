@@ -1,4 +1,5 @@
 import { db } from './db.js';
+import { ProjectStatus } from '../projects/project-status.enum.js';
 
 export async function listProjects() {
   return db.orm.public.Project.all();
@@ -7,7 +8,7 @@ export async function listProjects() {
 export async function createProject(
   name: string,
   description: string | undefined,
-  status: string,
+  status: ProjectStatus,
 ) {
   return db.orm.public.Project.create({
     name,
@@ -21,7 +22,7 @@ export async function updateProject(
   data: {
     name?: string;
     description?: string;
-    status?: string;
+    status?: ProjectStatus;
   },
 ) {
   return db.orm.public.Project.where({ id }).update(data);

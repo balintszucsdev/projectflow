@@ -12,6 +12,25 @@
   "domain": {
     "namespaces": {
       "public": {
+        "enum": {
+          "ProjectStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PLANNED",
+                "value": "PLANNED"
+              },
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "COMPLETED",
+                "value": "COMPLETED"
+              }
+            ]
+          }
+        },
         "models": {
           "Project": {
             "fields": {
@@ -48,6 +67,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ProjectStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "updatedAt": {
@@ -94,6 +119,13 @@
         "entries": {
           "table": {
             "project": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('PLANNED', 'ACTIVE', 'COMPLETED')",
+                  "name": "project_status_check_aebaa98b",
+                  "prefix": "project_status_check"
+                }
+              ],
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -126,7 +158,13 @@
                 "status": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ProjectStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -147,13 +185,23 @@
               },
               "uniques": []
             }
+          },
+          "valueSet": {
+            "ProjectStatus": {
+              "kind": "valueSet",
+              "values": [
+                "PLANNED",
+                "ACTIVE",
+                "COMPLETED"
+              ]
+            }
           }
         },
         "id": "public",
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "32e16c0c3a2775de3f3c3a8059d41bfbabfe50d4de4951406aff841cf596ef70"
+    "storageHash": "8fdee3b691ef96564d673c0a46c5332f35b860abf4754bcab9d0a4a1351b1d5b"
   },
   "capabilities": {
     "postgres": {

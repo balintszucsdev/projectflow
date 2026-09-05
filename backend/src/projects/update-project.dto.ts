@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ProjectStatus } from './project-status.enum.js';
 
 export class UpdateProjectDto {
   @IsString()
@@ -10,8 +11,7 @@ export class UpdateProjectDto {
   @IsOptional()
   description?: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsEnum(ProjectStatus)
   @IsOptional()
-  status?: string;
+  status?: ProjectStatus;
 }

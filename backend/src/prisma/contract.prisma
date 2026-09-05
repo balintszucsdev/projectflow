@@ -1,10 +1,18 @@
 // use prisma-next
 
+enum ProjectStatus {
+  @@type("pg/text@1")
+
+  PLANNED
+  ACTIVE
+  COMPLETED
+}
+
 model Project {
   id          Int @id @default(autoincrement())
   name        String
   description String?
-  status      String
+  status      ProjectStatus
   createdAt   TimestamptzString @default(now())
   updatedAt   TimestamptzString @default(now())
 

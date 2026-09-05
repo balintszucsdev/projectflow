@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ProjectStatus } from '../projects/project-status.enum.js';
 import {
   createProject,
   listProjects,
@@ -13,7 +14,11 @@ export class PrismaService {
     return listProjects();
   }
 
-  createProject(name: string, description: string | undefined, status: string) {
+  createProject(
+    name: string,
+    description: string | undefined,
+    status: ProjectStatus,
+  ) {
     return createProject(name, description, status);
   }
 
@@ -22,7 +27,7 @@ export class PrismaService {
     data: {
       name?: string;
       description?: string;
-      status?: string;
+      status?: ProjectStatus;
     },
   ) {
     return updateProject(id, data);
