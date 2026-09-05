@@ -1,0 +1,44 @@
+[
+  {
+    "id": "checkConstraint.project.project_status_check_aebaa98b",
+    "label": "Add check constraint \"project_status_check_aebaa98b\" on \"project\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "project_status_check_aebaa98b",
+        "table": "project"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"project_status_check_aebaa98b\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "project_status_check_aebaa98b",
+          "public",
+          "\"public\".\"project\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"project_status_check_aebaa98b\"",
+        "sql": "ALTER TABLE \"public\".\"project\" ADD CONSTRAINT \"project_status_check_aebaa98b\" CHECK (\"status\" IN ('PLANNED', 'ACTIVE', 'COMPLETED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"project_status_check_aebaa98b\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "project_status_check_aebaa98b",
+          "public",
+          "\"public\".\"project\""
+        ]
+      }
+    ]
+  }
+]
