@@ -1,9 +1,12 @@
+import { execSync } from 'node:child_process';
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { afterAll, beforeAll, describe, it } from '@jest/globals';
 import request from 'supertest';
-import { AppModule } from './../src/app.module.js';
-import { db } from './../src/prisma/db.js';
 import type { App } from 'supertest/types';
 import { ProjectStatus } from './../src/projects/project-status.enum.js';
 
@@ -18,8 +21,30 @@ type ProjectResponse = {
 
 describe('ProjectsController (e2e)', () => {
   let app: INestApplication<App>;
+  let container: StartedPostgreSqlContainer;
+  let db: typeof import('./../src/prisma/db.js').db;
 
   beforeAll(async () => {
+    container = await new PostgreSqlContainer('postgres:17-alpine')
+      .withDatabase('projectflow_test')
+      .withUsername('test')
+      .withPassword('test')
+      .start();
+
+    const databaseUrl = container.getConnectionUri();
+
+    process.env.DATABASE_URL = databaseUrl;
+
+    execSync(`npx prisma db migrate --db "${databaseUrl}"`, {
+      cwd: process.cwd(),
+      stdio: 'inherit',
+    });
+
+    const { AppModule } = await import('./../src/app.module.js');
+    const dbModule = await import('./../src/prisma/db.js');
+
+    db = dbModule.db;
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -34,7 +59,7 @@ describe('ProjectsController (e2e)', () => {
     );
 
     await app.init();
-  });
+  }, 120_000);
 
   it('/api/projects (GET)', async () => {
     await request(app.getHttpServer()).get('/api/projects').expect(200);
@@ -191,5 +216,6 @@ describe('ProjectsController (e2e)', () => {
   afterAll(async () => {
     await app.close();
     await db.close();
+    await container.stop();
   });
 });
