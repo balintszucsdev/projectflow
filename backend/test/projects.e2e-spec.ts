@@ -1,11 +1,12 @@
-import { execSync } from 'node:child_process';
 import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
+  cleanTestDatabase,
+  startTestDatabase,
+  stopTestDatabase,
+} from './helpers/test-database.js';
+import type { TestDatabase } from './helpers/test-database.js';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { afterAll, beforeAll, describe, it } from '@jest/globals';
+import { afterAll, beforeAll, describe, it, beforeEach } from '@jest/globals';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import { ProjectStatus } from './../src/projects/project-status.enum.js';
@@ -21,24 +22,13 @@ type ProjectResponse = {
 
 describe('ProjectsController (e2e)', () => {
   let app: INestApplication<App>;
-  let container: StartedPostgreSqlContainer;
+  let testDatabase: TestDatabase;
   let db: typeof import('./../src/prisma/db.js').db;
 
   beforeAll(async () => {
-    container = await new PostgreSqlContainer('postgres:17-alpine')
-      .withDatabase('projectflow_test')
-      .withUsername('test')
-      .withPassword('test')
-      .start();
+    testDatabase = await startTestDatabase();
 
-    const databaseUrl = container.getConnectionUri();
-
-    process.env.DATABASE_URL = databaseUrl;
-
-    execSync(`npx prisma db migrate --db "${databaseUrl}"`, {
-      cwd: process.cwd(),
-      stdio: 'inherit',
-    });
+    process.env.DATABASE_URL = testDatabase.databaseUrl;
 
     const { AppModule } = await import('./../src/app.module.js');
     const dbModule = await import('./../src/prisma/db.js');
@@ -61,6 +51,10 @@ describe('ProjectsController (e2e)', () => {
     await app.init();
   }, 120_000);
 
+  beforeEach(async () => {
+    await cleanTestDatabase(testDatabase);
+  });
+
   it('/api/projects (GET)', async () => {
     await request(app.getHttpServer()).get('/api/projects').expect(200);
   });
@@ -76,17 +70,12 @@ describe('ProjectsController (e2e)', () => {
       .expect(201);
 
     const body = response.body as ProjectResponse;
-    const projectId = body.id;
 
     expect(body).toMatchObject({
       name: 'E2E Test Project',
       description: 'Created by E2E test',
       status: ProjectStatus.PLANNED,
     });
-
-    await request(app.getHttpServer())
-      .delete(`/api/projects/${projectId}`)
-      .expect(200);
   });
 
   it('/api/projects (POST) should return 400 for invalid status', async () => {
@@ -134,10 +123,6 @@ describe('ProjectsController (e2e)', () => {
       description: 'Project created for GET by id test',
       status: ProjectStatus.PLANNED,
     });
-
-    await request(app.getHttpServer())
-      .delete(`/api/projects/${createdProject.id}`)
-      .expect(200);
   });
 
   it('/api/projects/:id (GET) should return 404 when project does not exist', async () => {
@@ -171,10 +156,6 @@ describe('ProjectsController (e2e)', () => {
       description: 'Before update',
       status: ProjectStatus.ACTIVE,
     });
-
-    await request(app.getHttpServer())
-      .delete(`/api/projects/${createdProject.id}`)
-      .expect(200);
   });
 
   it('/api/projects/:id (PATCH) should return 404 when project does not exist', async () => {
@@ -216,6 +197,6 @@ describe('ProjectsController (e2e)', () => {
   afterAll(async () => {
     await app.close();
     await db.close();
-    await container.stop();
+    await stopTestDatabase(testDatabase);
   });
 });
