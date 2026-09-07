@@ -49,3 +49,13 @@ jobs:
             - name: Run frontend tests
               working-directory: frontend
               run: npm test -- --watch=false
+
+            - name: Install Playwright Chromium
+              working-directory: frontend
+              run: npx playwright install --with-deps chromium
+
+            - name: Run Playwright E2E tests
+              working-directory: frontend
+              run: npx playwright test --project=chromium
+              env:
+                DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/projectflow
