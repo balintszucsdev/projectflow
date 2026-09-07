@@ -1,35 +1,45 @@
-import { execSync } from 'node:child_process';
+import { jest } from '@jest/globals';
 import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
+  startTestDatabase,
+  stopTestDatabase,
+  TestDatabase,
+} from './helpers/test-database';
+
+jest.setTimeout(120_000);
 
 describe('PostgreSQL Testcontainer', () => {
-  let container: StartedPostgreSqlContainer;
+  let testDatabase: TestDatabase | undefined;
 
   beforeAll(async () => {
-    container = await new PostgreSqlContainer('postgres:17-alpine')
-      .withDatabase('projectflow_test')
-      .withUsername('test')
-      .withPassword('test')
-      .start();
-
-    const databaseUrl = container.getConnectionUri();
-
-    process.env.DATABASE_URL = databaseUrl;
-
-    execSync(`npx prisma db migrate --db "${databaseUrl}"`, {
-      cwd: process.cwd(),
-      stdio: 'inherit',
-    });
-  }, 120_000);
-
-  afterAll(async () => {
-    await container.stop();
+    testDatabase = await startTestDatabase();
   });
 
-  it('should start a PostgreSQL container with the ProjectFlow schema', () => {
-    expect(container).toBeDefined();
-    expect(container.getConnectionUri()).toContain('projectflow_test');
+  afterAll(async () => {
+    if (testDatabase) {
+      await stopTestDatabase(testDatabase);
+    }
+  });
+
+  it('should start a PostgreSQL container with the ProjectFlow schema', async () => {
+    expect(testDatabase).toBeDefined();
+
+    const result = await testDatabase!.container.exec([
+      'psql',
+      '-U',
+      'test',
+      '-d',
+      'projectflow_test',
+      '-tAc',
+      `
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public'
+          AND table_name = 'project'
+        );
+      `,
+    ]);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout.trim()).toBe('t');
   });
 });
