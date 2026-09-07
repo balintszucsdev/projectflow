@@ -37,3 +37,15 @@ jobs:
             - name: Run backend E2E tests
               working-directory: backend
               run: npm run test:e2e -- --runInBand
+
+            - name: Install frontend dependencies
+              working-directory: frontend
+              run: npm ci
+
+            - name: Build frontend
+              working-directory: frontend
+              run: npm run build
+            
+            - name: Run frontend tests
+              working-directory: frontend
+              run: npm test -- --watch=false
