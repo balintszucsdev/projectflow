@@ -36,4 +36,4 @@ jobs:
 
             - name: Run backend E2E tests
               working-directory: backend
-              run: npm run test:e2e -- postgres-container.e2e-spec.ts
+              run: npm run test:e2e -- --runInBand
