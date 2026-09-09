@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: projectflow-postgres
+    environment:
+      POSTGRES_DB: projectflow
+      POSTGRES_USER: projectflow
+      POSTGRES_PASSWORD: projectflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - projectflow-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U projectflow -d projectflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: projectflow-backend
+    environment:
+      DATABASE_URL: postgresql://projectflow:projectflow@postgres:5432/projectflow
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  migrate:
+    build:
+      context: ./backend
+      target: build
+    environment:
+      DATABASE_URL: postgresql://projectflow:projectflow@postgres:5432/projectflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["npx", "prisma", "db", "migrate"]
+
+volumes:
+  projectflow-postgres-data:
