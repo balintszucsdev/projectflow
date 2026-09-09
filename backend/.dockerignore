@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Environment / secrets
+.env
+.env.*
+
+# Keep the example env file
+!.env.example
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# AI / editor agent configuration
+.agents
+.claude
+.cursor
+.devin
+
+# Tests and test output
+test
+coverage
+test-results
+playwright-report
+
+# Documentation
+README.md
+prisma-next.md
+
+# Development-only config
+.prettierrc
+eslint.config.mjs
+
+# Logs
+*.log
+npm-debug.log*
