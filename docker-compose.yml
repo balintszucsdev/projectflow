@@ -39,5 +39,32 @@ services:
         condition: service_healthy
     command: ["npx", "prisma", "db", "migrate"]
 
+  prometheus:
+    image: prom/prometheus:v3.14.0
+    container_name: projectflow-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - projectflow-prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:13.2.2
+    container_name: projectflow-grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - projectflow-grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
 volumes:
   projectflow-postgres-data:
+  projectflow-prometheus-data:
+  projectflow-grafana-data:
