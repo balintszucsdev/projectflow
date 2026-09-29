@@ -1,0 +1,20 @@
+.project-list {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+.project-card {
+  border: 1px solid #767676;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.project-card h3 {
+  margin-top: 0;
+}
+
+.project-status-label {
+  font-weight: 700;
+}
