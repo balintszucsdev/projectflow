@@ -1,10 +1,18 @@
 <main>
   <h1>ProjectFlow</h1>
 
-  <h2>Backend kapcsolat</h2>
-  <p role="status">{{ backendStatus() }}</p>
+  <nav aria-label="Main navigation">
+    <a routerLink="/projects">Projects</a>
+  </nav>
 
-  @if (backendService()) {
-    <p>Szolgáltatás: {{ backendService() }}</p>
-  }
+  <section aria-labelledby="backend-heading">
+    <h2 id="backend-heading">Backend kapcsolat</h2>
+    <p role="status">{{ backendStatus() }}</p>
+
+    @if (backendService()) {
+      <p>Szolgáltatás: {{ backendService() }}</p>
+    }
+  </section>
+
+  <router-outlet />
 </main>

@@ -1,0 +1,100 @@
+<section aria-labelledby="projects-heading">
+  <h2 id="projects-heading">Projects</h2>
+
+  <form [formGroup]="projectForm" (ngSubmit)="saveProject()" novalidate>
+    <h3>{{ editingProject() ? 'Edit project' : 'Create project' }}</h3>
+
+    <label for="project-name">Name</label>
+    <input id="project-name" formControlName="name" required />
+    @if (projectForm.controls.name.touched && projectForm.controls.name.invalid) {
+      <p class="field-error" role="alert">Name is required.</p>
+    }
+
+    <label for="project-description">Description</label>
+    <textarea id="project-description" formControlName="description"></textarea>
+
+    <label for="project-status">Status</label>
+    <select id="project-status" formControlName="status" required>
+      <option value="">Select a status</option>
+      @for (status of projectStatuses; track status) {
+        <option [value]="status">{{ status }}</option>
+      }
+    </select>
+    @if (projectForm.controls.status.touched && projectForm.controls.status.invalid) {
+      <p class="field-error" role="alert">Status is required.</p>
+    }
+
+    <button type="submit" [disabled]="pendingOperation() !== null">
+      @if (pendingOperation() === 'save') {
+        Saving...
+      } @else {
+        {{ editingProject() ? 'Update project' : 'Create project' }}
+      }
+    </button>
+    @if (editingProject()) {
+      <button type="button" (click)="cancelEditing()" [disabled]="pendingOperation() !== null">
+        Cancel
+      </button>
+    }
+  </form>
+
+  @if (operationMessage()) {
+    <p role="status">{{ operationMessage() }}</p>
+  }
+  @if (operationError()) {
+    <p role="alert">{{ operationError() }}</p>
+  }
+
+  @if (loading()) {
+    <p role="status">Loading projects...</p>
+  } @else if (error()) {
+    <p role="alert">{{ error() }}</p>
+  } @else if (projects().length === 0) {
+    <p>No projects found.</p>
+  } @else {
+    <ul class="project-list">
+      @for (project of projects(); track project.id) {
+        <li class="project-card">
+          <h3>{{ project.name }}</h3>
+          <p>{{ project.description ?? 'No description provided.' }}</p>
+          <p><span class="project-status-label">Status:</span> {{ project.status }}</p>
+          <button
+            type="button"
+            (click)="startEditing(project)"
+            [disabled]="pendingOperation() !== null"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            (click)="deleteProject(project)"
+            [disabled]="pendingOperation() !== null"
+          >
+            @if (deletingProjectId() === project.id) {
+              Deleting...
+            } @else if (confirmingDeleteProjectId() === project.id) {
+              Delete project?
+            } @else {
+              Delete
+            }
+          </button>
+          @if (confirmingDeleteProjectId() === project.id) {
+            <div>
+              <p>Are you sure you want to delete {{ project.name }}?</p>
+              <button
+                type="button"
+                (click)="confirmDelete(project)"
+                [disabled]="pendingOperation() !== null"
+              >
+                Confirm delete
+              </button>
+              <button type="button" (click)="cancelDelete()">
+                Cancel
+              </button>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>

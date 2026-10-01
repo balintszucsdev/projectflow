@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { RouterLink, RouterOutlet } from '@angular/router';
 
 interface HealthResponse {
   status: string;
@@ -9,6 +10,7 @@ interface HealthResponse {
 @Component({
   selector: 'app-root',
   standalone: true,
+  imports: [RouterLink, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
