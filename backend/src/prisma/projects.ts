@@ -2,7 +2,10 @@ import { db } from './db.js';
 import { ProjectStatus } from '../projects/project-status.enum.js';
 
 export async function listProjects() {
-  return db.orm.public.Project.all();
+  return db.orm.public.Project.orderBy([
+    (project) => project.createdAt.asc(),
+    (project) => project.id.asc(),
+  ]).all();
 }
 
 export async function createProject(
