@@ -6,3 +6,11 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CreateProjectRequest {
+  name: string;
+  description: string | null;
+  status: string;
+}
+
+export type UpdateProjectRequest = Partial<CreateProjectRequest>;
