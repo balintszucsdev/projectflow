@@ -8,6 +8,21 @@ jobs:
     ci:
         runs-on: ubuntu-latest
 
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DB: projectflow
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd="pg_isready -U postgres -d projectflow"
+                    --health-interval=10s
+                    --health-timeout=5s
+                    --health-retries=5
+
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
@@ -25,6 +40,12 @@ jobs:
             - name: Install backend dependencies
               working-directory: backend
               run: npm ci
+
+            - name: Initialize CI database
+              working-directory: backend
+              run: npx prisma db migrate
+              env:
+                  DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/projectflow
 
             - name: Build backend
               working-directory: backend
