@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
+import { environment } from '../environments/environment.local.js';
 
 interface HealthResponse {
   status: string;
@@ -21,12 +22,10 @@ export class App implements OnInit {
   readonly backendService = signal('');
 
   ngOnInit(): void {
-    this.http.get<HealthResponse>('/api/health').subscribe({
+    this.http.get<HealthResponse>(`${environment.apiUrl}/api/health`).subscribe({
       next: (response) => {
         this.backendStatus.set(
-          response.status === 'ok'
-            ? 'A backend elérhető.'
-            : 'A backend hibás állapotot jelzett.',
+          response.status === 'ok' ? 'A backend elérhető.' : 'A backend hibás állapotot jelzett.',
         );
         this.backendService.set(response.service);
       },
